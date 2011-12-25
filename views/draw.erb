@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+  <head>
+    <title>Painter</title>
+    
+    <style>
+
+
+	body{
+	    background: url('bg.png') bottom left repeat;
+	    margin-top: 0;
+	    font-size: 22px;
+	}
+	
+	.image{
+	    z-index: 1;
+	    postion: absolute;
+	    margin-top: 10px;
+	    margin-left: 240px;
+	    
+	    width: 900px;
+	    height: 650px;
+	}
+	.drawBoard{
+	    postion:absolute;
+	    margin-top: -480px;
+	    margin-left: 568px;
+	    z-index:2;
+	    cursor: crosshair;
+	}
+	img{
+	    width: 900px;
+	    height: 650px;
+	    border-radius: 10px;
+	    box-shadow: 0px 0px 10px #888888;
+	}
+	.pen{
+	    postion: absolute;
+	    margin: -130px 300px 10px 455px;
+	}
+	
+	.eraser{
+	    postion: absolute;
+	    margin: 50px 300px 10px 265px;
+	}
+	
+	.backDiv{
+	    background-color: transparent;
+	    width: 110px;
+	    height: 40px;
+	    border-radius: 15px;
+	    box-shadow: 0px 10px 10px #888888;
+	    position: absolute;
+	    z-index: 4;
+	    margin: -310px 0 200px 1100px;
+	    text-align: center;
+	    padding-top: 20px;
+	    font-family: Microsoft YaHei;
+	}
+	
+	.msgDiv{
+	    background-color: transparent;
+	    width: 110px;
+	    height: 40px;
+	    border-radius: 15px;
+	    box-shadow: 0 10px 10px #888888;
+	    position: absolute;
+	    z-index: 4;
+	    margin: -225px 0 200px 1100px;
+	    text-align: center;	    
+	    padding-top: 20px;
+	    font-family: Microsoft YaHei;
+	}
+	
+	.wordsDiv{
+	    background-color: white;	    
+	    width: 460px;
+	    height: 200px;
+	    border-radius: 15px;
+	    border: solid 10px orange;
+	    position: absolute;
+	    z-index: 4;
+	    margin: -510px 0 100px 50px;
+	    text-align: left;	    
+	    padding: 5px;
+	    box-shadow: 0 5px 5px #888888;
+	    font-family: Microsoft YaHei;
+	    font-size: 16px;
+	    color: grey;
+	}
+	
+	a:link{
+	    color: black;
+	    text-decoration:none;
+	}
+	a:hover{
+	    color: lightgrey;
+	}
+	
+	a:active{
+	    color: yellow;
+	}
+	
+    
+	
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript" charset="utf-8"  src="jquery.js"></script>
+    <script type="text/javascript" charset="utf-8" src="gury.js"></script>
+    <script type="text/javascript" charset="utf-8">
+	$(function(){
+	    var gury = $g("myCanvas");
+	
+	    gury.size(413, 280);
+	    var context = gury.ctx;
+	    var canvas = gury.canvas;
+	    gury.background("transparent");
+	    //canvas.style.border = "solid 1px grey"
+	    
+	    // 求取绝对坐标
+	    function getBodyOffsetTop(el) {
+		var top = 0;
+		do {
+			top = top + el.offsetTop;
+		} while(el = el.offsetParent);
+		return top;
+	    }
+
+	    function getBodyOffsetLeft(el) {
+		var left = 0;
+		do {
+			left = left + el.offsetLeft;
+		} while(el = el.offsetParent);
+		return left;
+	    }
+	    
+	    function Drawing() {
+		this.init(canvas);
+	    }
+
+	    Drawing.prototype = {
+		
+		init : function(canvas) {
+			this.canvas = canvas;
+			this.context = context;
+			this.context.lineWidth = 10;
+			this.context.lineJoin = 'round';
+			this.context.lineCap = 'round';
+			this.isButtonDown = false;
+			
+			this.model = "normal";
+			this.setColorAndAlpha(false, false);
+		    
+			// 绑定事件
+			this.bindEvent();
+		
+		},
+		bindEvent : function() {
+			var self = this;
+				    
+			// 获取坐标
+			this.canvas.addEventListener('mousemove', function(event) {
+				var x = event.pageX - getBodyOffsetLeft(this), 
+					y = event.pageY - getBodyOffsetTop(this);
+				self.onMouseMove({
+					x : x,
+					y : y
+				});
+			}, false);
+			this.canvas.addEventListener('mousedown', function(event) {
+				var x = event.pageX - getBodyOffsetLeft(this), y = event.pageY - getBodyOffsetTop(this);
+				self.onMouseDown(event, {
+					x : x,
+					y : y
+				});
+			}, false);
+			this.canvas.addEventListener('mouseup', function(event) {
+				var x = event.pageX - getBodyOffsetLeft(this), y = event.pageY - getBodyOffsetTop(this);
+				self.onMouseUp(event, {
+					x : x,
+					y : y
+				});
+			}, false);
+			this.canvas.addEventListener('mouseout', function(event) {
+				var x = event.pageX - getBodyOffsetLeft(this), y = event.pageY - getBodyOffsetTop(this);
+				self.onMouseOut(event, {
+					x : x,
+					y : y
+				});
+			}, false);
+			this.canvas.addEventListener('click', function(event) {
+				var x = event.pageX - getBodyOffsetLeft(this), y = event.pageY - getBodyOffsetTop(this);
+				self.onClick({
+					x : x,
+					y : y
+				});
+			}, false);
+		},
+		onMouseMove : function(pos) {
+			// 只在鼠标是按下模式下执行
+			if(this.isButtonDown) {
+				// 画到该点
+				this.context.lineTo(pos.x, pos.y);
+				this.context.stroke();
+			}
+		},
+		// 鼠标按下事件监听
+		onMouseDown : function(event, pos) {
+			// 监听左键
+			if(event.button == 0) {
+				
+				// 设置鼠标按下
+				this.isButtonDown = true;
+				
+				// 画出第一点
+				this.context.beginPath();
+				this.context.arc(pos.x, pos.y, 5, 0, 2 * Math.PI, false);
+				
+				this.context.fillStyle = this.color;
+				this.context.fill();
+				
+				this.context.strokeStyle = this.color;
+				this.context.globalAlpha = this.alpha;
+				
+				this.context.beginPath();
+				this.context.moveTo(pos.x, pos.y);
+			}
+		},
+		onMouseUp : function(event, pos) {
+		    // 鼠标抬起事件
+		    // 如果是鼠标左键
+		    if(event.button == 0) {
+			this.isButtonDown = false;
+		    }
+		},
+		onMouseOut: function(){
+		    this.isButtonDown = false;
+		},
+		onClick : function(pos) {
+		    if(this.model == "normal"){
+			this.setColorAndAlpha(false, false);
+		    }
+		},
+		useEraser: function(){
+		    // 使用橡皮擦模式 	
+		    this.model = "eraser";
+		    this.setColorAndAlpha("white", 1);
+		},
+		backToNormal: function(){
+		    this.model = "normal";
+		    this.setColorAndAlpha(false, false);
+		},
+		setColorAndAlpha: function(color, alpha){
+		    if(color){
+			this.color = color;
+		    }else{
+			this.color = getRandColor();
+		    }
+		    if(alpha){
+			this.alpha = alpha;
+		    }else{
+			this.alpha = Math.random() * 0.1;
+		    }
+		}
+	    };
+	    
+	    // 获取 随机 颜色
+	    function getRandColor(){
+		  var r = Math.round(Math.random() * 255),
+		    g = Math.round(Math.random() * 255),
+		    b = Math.round(Math.random() * 255);
+		    // 颜色
+		    var color = "rgb(" + r+ " , " + g + ", " + b+ ")";
+		    return color;
+	    }
+	    
+	    var drawing = new Drawing();
+	    
+	    function Module(x, y, color){
+		this.x = x;
+		this.y = y;
+		this.color = color;
+	    }
+	    
+	    Module.prototype.draw = function(ctx, canvas){
+		ctx.translate(canvas.width/2, canvas.height/2);
+		ctx.rect(this.x, this.y, 90, 45);
+		ctx.globalAlpha = 0.1;
+		ctx.fillStyle = this.color;
+		ctx.fill();
+	    }
+	    
+	    var eraser = $g("eraser");
+	    //  工具栏
+	    eraser.size(110, 60).background("transparent");
+	    eraser.add('eraser', new Module(-45, -22.5, "white")).click('eraser', function(){
+		drawing.useEraser();
+	    }).draw();
+	    
+	    var pen = $g("pen");
+	    pen.size(110, 60).background("transparent");
+	    pen.add('pen', new Module(-45, -22.5, "white")).click('pen', function(){
+		drawing.backToNormal();
+	    }).draw();
+	  
+	});
+    </script>
+
+    <div class="image"><img src="drawback.jpg"/></div>
+    <div class="drawBoard">
+	<canvas id="myCanvas" ></canvas>
+    </div>
+    <div class="eraser">
+	<canvas id="eraser"></canvas>
+    </div>
+    <div class="pen">
+	<canvas id="pen"></canvas>
+    </div>
+    
+     <div class="backDiv">
+	<a href="/">Back</a>
+    </div>
+    
+    <div class="msgDiv">
+	<a href="/msg">留言板</a>
+    </div>
+    
+    
+    <div class="wordsDiv">
+	<p>
+	    欢迎来到这里哦~<br/>
+	    首先,圣诞来临,赶制网站,祝大家圣诞快乐~<br/>		
+	    网站所有图片是手绘而成的哦~算是了了阿狸粉丝得阿狸梦吧~<br/>
+	    由于网站刚刚起步,还需要大家的各种宝贵意见,留言板就是大家展现创作力的地方<br/>
+	    留言板目前只是简约模式哦~想让她变成您喜欢得样子么?那就发挥你的想象力吧~<br/>
+	    另外,您找到本页的彩蛋了吗?..^^ <br/>
+	    最后,"阿狸永远站"正在紧张的筹划制作中.敬请期待...... 
+	</p>
+    </div>
+    
+    
+  </body>
+</html>

@@ -1,0 +1,27 @@
+<head>
+	<script>
+
+	</script>
+</head>
+
+
+<h1>WelCome to Manage</h1>
+
+<h2>posts:</h2>
+
+<% @posts.each do |p| %>
+	<%= p.name %> from <%= p.ip%> at <%= p.created_at.strftime("%Y-%m-%d %H:%M:%S") %>:
+	<br/>
+	<%= p.content%>
+	<br/>
+	<form action="/deletePost" method="post">
+		<input type="hidden" name="id" value="<%=p.id%>"/>
+		<input type="submit" value="删除" />
+	</form>
+	<hr/>
+<% end %>
+
+<h2>visits:</h2>
+<% @visits.each do |v|%>
+	<%= v.ip%> : <%= v.count %><br/>
+<% end %>

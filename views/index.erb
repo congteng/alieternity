@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+  <head>
+    <title>阿狸永远站-圣诞节专版(Merry X'Mas!)</title>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <style>
+    
+	body{
+	    background: url('bg.png') bottom left repeat;
+	    margin-top: 0;
+	    font-size: 22px;
+	}
+	.image{
+	    z-index:2;
+	    position: absolute;
+	    margin: 10px 0 10px 230px;
+	}
+	
+	.canvas1{
+	    position: absolute;
+	    z-index: 3;
+	    margin-left: 0;
+	    margin-top: 0;
+	    height: 100px;
+	}
+	.canvas2{
+	    position: absolute;
+	    z-index: 2;
+	    margin-left: 50px;
+	    margin-top: 0;
+	    height: 100px;
+	}
+	img{
+	    width: 900px;
+	    height: 650px;
+	    border-radius: 10px;
+	    box-shadow: 0px 0px 10px #888888;
+	}
+	.link{
+	    position: absolute;
+	    margin-top: 500px;
+	    margin-left: 20px;
+	}
+	
+	.moreDiv{
+	    background-color: transparent;
+	    width: 110px;
+	    height: 40px;
+	    border-radius: 15px;
+	    box-shadow: 0px 10px 10px #888888;
+	    position: absolute;
+	    z-index: 4;
+	    margin: 200px 0 200px 1100px;
+	    text-align: center;
+	    padding-top: 20px;
+	    font-family: Microsoft YaHei;
+	}
+	
+	.msgDiv{
+	    background-color: transparent;
+	    width: 110px;
+	    height: 40px;
+	    border-radius: 15px;
+	    box-shadow: 0 10px 10px #888888;
+	    position: absolute;
+	    z-index: 4;
+	    margin: 280px 0 200px 1100px;
+	    text-align: center;
+	    padding-top: 20px;
+	    font-family: Microsoft YaHei;
+	}
+	
+	a:link{
+	    color: black;
+	    text-decoration:none;
+	}
+	a:hover{
+	    color: lightgrey;
+	}
+	
+	a:active{
+	    color: yellow;
+	}
+	
+    </style>
+    <script type="text/javascript" charset="utf-8"  src="jquery.js"></script>
+    <script type="text/javascript" charset="utf-8" src="gury.js"></script>
+    <script type="text/javascript" charset="utf-8">
+	$(function(){
+	
+	    var bubbleCanvas = $g("canvas1");
+	    var snowCanvas = $g("canvas2");
+	    
+	    //snowCanvas.canvas.style.border = "solid 1px grey";
+	    bubbleCanvas.size(document.body.clientWidth, 636).background("transparent");
+	    snowCanvas.size(document.body.clientWidth - 100, 636).background("transparent");
+	    
+	    function Bubble(x, y, r, alpha, color){
+		this.theta = 0;
+		this.x = x;
+		this.y = y;
+		this.r = r;
+		this.alpha = alpha;
+		this.color = color;
+	    }
+	    Bubble.prototype.draw = function(ctx, canvas){
+		ctx.save();
+		    ctx.translate(this.x, this.y);
+		    ctx.rotate(this.theta);
+		    
+		    ctx.fillStyle = this.color;
+		    ctx.globalAlpha = this.alpha;
+		    
+		    //ctx.fillRect(-16, -16, this.r, this.r);
+		    ctx.beginPath();
+		    //ctx.arc(-16, -16, this.r, 0, Math.PI * 2, false);
+		    ctx.arc(-16, -16, this.r, 0, Math.PI * 2, false);
+		    ctx.fill();
+		ctx.restore();
+		if(this.y < 696 && this.y > 6 && this.x > 6 && this.x < document.body.clientWidth-6){
+		    this.theta += Math.PI / 66;
+		    if(Math.random() > 0.5){
+			this.y += Math.random();
+		    }else{
+			this.y -= Math.random();
+		    }
+		}else{
+		    bubbleCanvas.remove(this);
+		}
+	    }
+	    
+	    // 记录 气泡数量
+	    var bubbleCount = 0;
+	    function bubbleFloat(){
+		bubbleCanvas.add(new Bubble(Math.random()*document.body.clientWidth, Math.random()*600, Math.random() * 16, Math.random(), getRandColor())).play(33);
+		bubbleCount ++;
+		if(bubbleCount > 36){
+		    clearInterval(timer);
+		}
+	    }
+	    // 获取 随机 颜色
+	    function getRandColor(){
+		  var r = Math.round(Math.random() * 255),
+		    g = Math.round(Math.random() * 255),
+		    b = Math.round(Math.random() * 255);
+		    // 颜色
+		    var color = "rgb(" + r+ " , " + g + ", " + b+ ")";
+		    return color;
+	    }
+	    var timer = setInterval(bubbleFloat,333);
+	    
+	    function Snow(x, y, s){
+		this.x = x;
+		this.y = y;
+		this.s = s;
+	    }
+	    Snow.prototype.draw = function(ctx, canvas){
+		ctx.save();
+		    var imageObj = new Image();
+		    var x = this.x;
+		    var y = this.y;
+		    var s = this.s;
+		    imageObj.onload = function(){
+			ctx.drawImage(imageObj, x, y, s, s);
+		    };
+		    imageObj.src = "snow.png";
+		ctx.restore();
+		if(this.y < 600){
+		    this.y += 6;
+		    if(Math.random() < 0.3){
+			if(Math.random() > 0.3){
+			    this.x += Math.random()*2;
+			}else{
+			    this.x -= Math.random()*2;
+			}
+		    }
+		    
+		}else{
+		    snowCanvas.remove(this);
+		}
+	    }
+	    function snowDown(){
+		snowCanvas.add(new Snow(Math.random()*document.body.clientWidth-100, 0, Math.random() * 30)).play(150);
+	    }
+
+	    setInterval(snowDown,500);
+	});
+    </script>
+  </head>
+  <body>
+
+    <div class="image">
+	<img src="indexback.jpg"/>
+    </div>
+    
+    <div class="canvas1">
+	<canvas id="canvas1"></canvas>
+    </div>
+    <div class="canvas2">
+	<canvas id="canvas2"></canvas>
+    </div>
+    <div class="moreDiv">
+	<a href="/draw">Next</a>
+    </div>
+    
+    <div class="msgDiv">
+	<a href="/msg">留言板</a>
+    </div>
+    
+    <audio autoplay>
+      <source src="jinglebell.ogg" type="audio/ogg" />
+	你的浏览器不支持HTML5, 请使用Chrome/Firefox/opera/safari等,体验最优效果
+    </audio>
+  </body>
+</html>

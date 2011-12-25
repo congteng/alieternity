@@ -1,0 +1,141 @@
+<head>
+<style>
+	
+	
+	body{
+		background: url('bg.png') bottom left repeat;
+		text-align: center;
+		font-size: 16px;
+		font-family: Microsoft YaHei;
+	}
+	
+	.container{
+		background-color: white;
+		width: 980px;
+		margin: 0 100px 0 180px;
+		border: solid 1px lightgrey;
+		border-radius: 15px;
+	    box-shadow: 2px 2px 0 0 #888888;
+	}
+	.msgboard{
+		width: 960px;
+		margin-left: 10px;
+	}
+	.msgboard table{
+		width: 960px;
+		height: auto;
+	}
+	
+	
+	tr{
+		border: solid 1px lightgrey;
+	}
+	td{
+		border: solid 1px lightgrey;
+	}
+
+	table{
+		border: solid 1px lightgrey;
+	}
+	
+	.homeDiv{
+		font-size: 22px;
+	    background-color: transparent;
+	    width: 110px;
+	    height: 40px;
+	    border-radius: 15px;
+	    box-shadow: 0 10px 10px #888888;
+	    position: absolute;
+	    z-index: 4;
+	    margin: -350px 0 200px 950px;
+	    text-align: center;
+	    padding-top: 20px;
+	    font-family: Microsoft YaHei;
+	}
+	
+	
+	.homeDiv a:link{
+	    color: black;
+	    text-decoration:none;
+	}
+	
+	.homeDiv a:hover{
+		color: lightgrey;
+	}
+	
+	.homeDiv a:active{
+		color: yellow;
+	}
+	
+	input {
+		border: solid 1px lightgrey;
+	}
+	textarea{
+		border: solid 1px lightgrey;
+	}
+	hr{
+		color: lightgrey;
+	}
+	.send{
+		margin-top: 50px;
+		margin-left: 10px;
+	}
+</style>
+<script>
+	function reply(name, id){
+		document.getElementById("content").value = "@" + name + " ";
+		document.getElementById("pid").value = id;
+		document.getElementById("pname").value = name;
+		document.getElementById("name").focus();
+	}
+</script>
+</head>
+
+<div class="container">
+<h1>留言板</h1>
+
+<div class="msgboard">
+<table>
+	<tbody>
+		<% @posts.each do |p|%>
+			<tr><td>
+			<% if p.pid %>
+				<%= p.name %> 回复 <%= p.pname %>
+			<% else %>
+				<%= p.name %>
+			<% end %>
+			</td><td><%= p.created_at.strftime("%Y-%m-%d %H:%M:%S") %></td><td></td></tr>
+			<tr><td colspan="2" height="50"><%= p.content %></td><td><a href="#reply" onclick="reply('<%= p.name %>', <%= p.id %>)">回复</a></td></tr>
+		<% end %>
+	</tbody>
+</table>
+</div>
+
+<div class="send">
+	<form action="/new" method="post">
+		<table>
+			<tbody>
+				<tr>
+					<td>name:</td>
+					<td><input type="text" name="name" id="name"/><font color="red">(*必填)</font></td>
+					<a name="reply">
+					<input type="hidden" name="pid" id="pid" />
+					<input type="hidden" name="pname" id="pname" />
+				</tr>
+				<tr>
+					<td>content:</td>
+					<td><textarea id="content" name="content" rows="10" cols="40"></textarea><font color="red">(*必填)</font></td>
+				</tr>
+				<tr>
+					<td><input type="submit" value="提交"/></td>
+				</tr>
+			</tbody>
+		</table>
+	</form>
+	
+</div>
+
+<div class="homeDiv">
+		<a href="/">Home</a>
+	</div>
+</div>
